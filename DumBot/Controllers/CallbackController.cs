@@ -1,30 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using DumBot.Models;
-using Microsoft.Extensions.Configuration;
+using DumBot.Services;
 
 namespace DumBot.Controllers
 {
     [Route("[controller]")]
     public class CallbackController : Controller
     {
-        public IConfiguration Configuration { get; }
+        private readonly IConfiguration _configuration;
+        private readonly IBotService _botService;
+        private readonly ILogger<CallbackController> _logger;
 
         private readonly int _serverConfirmationGroupId;
         private readonly string _serverConfirmationReplyString;
         
-        public CallbackController(IConfiguration configuration)
+        public CallbackController(IConfiguration configuration, IBotService botService,
+            ILogger<CallbackController> logger)
         {
-            Configuration = configuration;
-            _serverConfirmationGroupId = int.Parse(Configuration["ServerConfirmationGroupId"]);
-            _serverConfirmationReplyString = Configuration["ServerConfirmationReplyString"];
+            _configuration = configuration;
+            _botService = botService;
+            _logger = logger;
+
+            _serverConfirmationGroupId = int.Parse(_configuration["ServerConfirmationGroupId"]);
+            _serverConfirmationReplyString = _configuration["ServerConfirmationReplyString"];
         }
 
         // GET api/values
@@ -56,6 +58,10 @@ namespace DumBot.Controllers
                     return callbackEvent.Group_id == _serverConfirmationGroupId
                         ? _serverConfirmationReplyString
                         : string.Empty;
+                case CallbackEventType.NewMessage:
+                    int userId = JObject.Parse(callbackEvent.Object.ToString())["from_id"].Value<int>();
+                    _botService.SendMessage(userId, "Test message");
+                    return "ok";
                 default:
                     return "ok";
             }

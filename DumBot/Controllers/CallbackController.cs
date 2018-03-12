@@ -59,7 +59,7 @@ namespace DumBot.Controllers
                         ? _serverConfirmationReplyString
                         : string.Empty;
                 case CallbackEventType.NewMessage:
-                    int userId = JObject.Parse(callbackEvent.Object.ToString())["from_id"].Value<int>();
+                    int userId = JObject.Parse(callbackEvent.Object.ToString())["user_id"].Value<int>();
                     _botService.SendMessage(userId, "Test message");
                     return "ok";
                 default:

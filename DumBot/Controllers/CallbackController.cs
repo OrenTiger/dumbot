@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -44,26 +48,41 @@ namespace DumBot.Controllers
         }
 
         [HttpPost]
-        public string Post([FromBody]CallbackEventModel callbackEvent)
+        public async Task<ActionResult> Post([FromBody]CallbackEventModel callbackEvent)
         {
             if (string.IsNullOrEmpty(callbackEvent.Type))
             {
-                HttpContext.Response.StatusCode = 400;
-                return string.Empty;
+                return BadRequest();
             }
 
             switch (callbackEvent.Type)
             {
                 case CallbackEventType.Confirmation:
-                    return callbackEvent.Group_id == _serverConfirmationGroupId
-                        ? _serverConfirmationReplyString
-                        : string.Empty;
+                    if (callbackEvent.Group_id == _serverConfirmationGroupId)
+                    {
+                        return Ok(new { Value = _serverConfirmationReplyString });
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
                 case CallbackEventType.NewMessage:
+                    string message = JObject.Parse(callbackEvent.Object.ToString())["body"].Value<string>();
                     int userId = JObject.Parse(callbackEvent.Object.ToString())["user_id"].Value<int>();
-                    _botService.SendMessage(userId, "Test message");
-                    return "ok";
+
+                    if (message.ToLowerInvariant().Contains(BotCommands.Hi.ToLowerInvariant()))
+                    {
+                        string userName = await _botService.GetUserNameAsync(userId);
+                        _botService.SendMessageAsync(userId, $"{BotCommands.Hi}, {userName}");
+                    }
+                    else
+                    {
+                        _botService.SendMessageAsync(userId, "Test message");
+                    }
+
+                    return Ok("ok");
                 default:
-                    return "ok";
+                    return Ok("ok");
             }
         }
 

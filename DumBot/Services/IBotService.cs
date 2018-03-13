@@ -1,7 +1,10 @@
-﻿namespace DumBot.Services
+﻿using System.Threading.Tasks;
+
+namespace DumBot.Services
 {
     public interface IBotService
     {
-        void SendMessage(int userId, string text);
+        void SendMessageAsync(int userId, string text);
+        Task<string> GetUserNameAsync(int userId);
     }
 }

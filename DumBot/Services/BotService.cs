@@ -165,6 +165,9 @@ namespace DumBot.Services
                     await SendMessageAsync(userId, weatherInfoMessage);
                     return;
                 }
+
+                await SendMessageAsync(userId, $"Неизвестная команда. Наберите /{BotCommands.Help} для вывода списка команд");
+                return;
             }
             else if (message.ToLowerInvariant().Contains(BotCommands.Hi.ToLowerInvariant()))
             {

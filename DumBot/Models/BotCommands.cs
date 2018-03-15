@@ -6,5 +6,6 @@
         public const string Help = "help";
         public const string Music = "music";
         public const string CatGif = "cat";
+        public const string Weather = "weather";
     }
 }

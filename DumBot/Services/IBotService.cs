@@ -8,5 +8,6 @@ namespace DumBot.Services
         Task<string> GetUserNameAsync(int userId);
         Task HandleMessageAsync(string message, int userId);
         Task<string> GetRandomDocAsync(string searchString);
+        Task<string> GetWeatherInfoAsync(string city);
     }
 }

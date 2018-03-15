@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 using System.Linq;
 using DumBot.Models;
+using System.Net;
 
 namespace DumBot.Services
 {
@@ -20,6 +21,8 @@ namespace DumBot.Services
         private readonly string _getUsersUrl;
         private readonly string _searchDocsUrl;
         private readonly string _accessToken;
+        private readonly string _weatherApiAccessToken;
+        private readonly string _getWeatherInfoUrl;
         private readonly string _apiVersion;
 
         public BotService(IConfiguration configuration, ILogger<BotService> logger)
@@ -30,8 +33,10 @@ namespace DumBot.Services
             _sendMessageUrl = _configuration.GetSection("AppSettings")["SendMessageUrl"];
             _getUsersUrl = _configuration.GetSection("AppSettings")["GetUsersUrl"];
             _searchDocsUrl = _configuration.GetSection("AppSettings")["SearchDocsUrl"];
+            _getWeatherInfoUrl = _configuration.GetSection("AppSettings")["GetWeatherInfoUrl"];
             _accessToken = _configuration["AccessToken"];
             _apiVersion = _configuration.GetSection("AppSettings")["VkApiVersion"];
+            _weatherApiAccessToken = _configuration["WeatherApiAccessToken"];
         }
 
         public async Task SendMessageAsync(int userId, string message, string attachment = "")
@@ -118,7 +123,8 @@ namespace DumBot.Services
                     await SendMessageAsync(userId,
                         $@"&#128220; /{BotCommands.Help} - список команд
 &#127926; /{BotCommands.Music} - случайная аудиозапись
-&#128008; /{BotCommands.CatGif} - случайный котик");
+&#128008; /{BotCommands.CatGif} - случайный котик
+&#9728; /{BotCommands.Weather} название_города - текущая погода");
                     return;
                 }
 
@@ -142,6 +148,23 @@ namespace DumBot.Services
                         return;
                     }
                 }
+
+                if (string.Compare(command, BotCommands.Weather, StringComparison.InvariantCultureIgnoreCase) == 0)
+                {
+                    var city = message
+                        .Trim()
+                        .ToLowerInvariant()
+                        .Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).FirstOrDefault();
+
+                    string weatherInfoMessage = string.Empty;
+
+                    weatherInfoMessage = string.IsNullOrEmpty(city)
+                        ? "Не указан город"
+                        : await GetWeatherInfoAsync(city);
+
+                    await SendMessageAsync(userId, weatherInfoMessage);
+                    return;
+                }
             }
             else if (message.ToLowerInvariant().Contains(BotCommands.Hi.ToLowerInvariant()))
             {
@@ -151,7 +174,7 @@ namespace DumBot.Services
                 return;                  
             }
 
-            await SendMessageAsync(userId, $"Неизвестная команда. Наберите /{BotCommands.Help} для вывода списка команд");
+            await SendMessageAsync(userId, $"Я тупой бот, понимаю только команды. Наберите /{BotCommands.Help} для вывода списка команд");
         }
 
         public async Task<string> GetRandomDocAsync(string searchString)
@@ -204,6 +227,40 @@ namespace DumBot.Services
             {
                 _logger.LogError($"Docs search failed. Status code: {response.StatusCode}");
                 return string.Empty;
+            }
+        }
+
+        public async Task<string> GetWeatherInfoAsync(string city)
+        {
+            if (string.IsNullOrEmpty(city)) 
+            {
+                throw new ArgumentException();
+            }
+
+            HttpClient httpClient = new HttpClient();
+
+            var response = await httpClient.GetAsync($"{_getWeatherInfoUrl}?APPID={_weatherApiAccessToken}&q={city}&units=metric&lang=ru");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = response.Content.ReadAsStringAsync().Result;
+                var jsonResult = JObject.Parse(JsonConvert.DeserializeObject(result).ToString());
+
+                string currentWeather = jsonResult["weather"]?.FirstOrDefault()?.Value<string>("description");
+                string currentTemp = jsonResult["main"]?.Value<string>("temp");
+                string wind = jsonResult["wind"]?.Value<string>("speed");
+
+                return $@"Облачность: {currentWeather}
+Температура: {currentTemp} °C
+Ветер: {wind} м/c";
+            }
+            else
+            {
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                    return "Город не найден";
+
+                _logger.LogError($"Get weather info failed. Status code: {response.StatusCode}");
+                return "Не удалось получить информацию, попробуйте позже";
             }
         }
     }

@@ -1,8 +1,4 @@
-﻿using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Generic;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -33,20 +29,17 @@ namespace DumBot.Controllers
             _serverConfirmationReplyString = _configuration["ServerConfirmationReplyString"];
         }
 
-        // GET api/values
+        // GET /callback
         [HttpGet]
-        public IEnumerable<string> Get()
+        public string Get()
         {
-            return new string[] { "value1", "value2" };
+            return "ok";
         }
 
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
-
+        /// <summary>
+        /// POST: /callback
+        /// Handle incoming event
+        /// </summary>
         [HttpPost]
         public async Task<ActionResult> Post([FromBody]CallbackEventModel callbackEvent)
         {
@@ -59,43 +52,18 @@ namespace DumBot.Controllers
             {
                 case CallbackEventType.Confirmation:
                     if (callbackEvent.Group_id == _serverConfirmationGroupId)
-                    {
                         return Ok(new { Value = _serverConfirmationReplyString });
-                    }
-                    else
-                    {
-                        return BadRequest();
-                    }
+                    else return BadRequest();
                 case CallbackEventType.NewMessage:
                     string message = JObject.Parse(callbackEvent.Object.ToString())["body"].Value<string>();
                     int userId = JObject.Parse(callbackEvent.Object.ToString())["user_id"].Value<int>();
 
-                    if (message.ToLowerInvariant().Contains(BotCommands.Hi.ToLowerInvariant()))
-                    {
-                        string userName = await _botService.GetUserNameAsync(userId);
-                        _botService.SendMessageAsync(userId, $"{BotCommands.Hi}, {userName}");
-                    }
-                    else
-                    {
-                        _botService.SendMessageAsync(userId, "Test message");
-                    }
+                    await _botService.HandleMessageAsync(message, userId);
 
                     return Ok("ok");
                 default:
                     return Ok("ok");
             }
-        }
-
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
         }
     }
 }

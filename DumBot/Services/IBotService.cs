@@ -4,7 +4,9 @@ namespace DumBot.Services
 {
     public interface IBotService
     {
-        void SendMessageAsync(int userId, string text);
+        Task SendMessageAsync(int userId, string text, string attachment);
         Task<string> GetUserNameAsync(int userId);
+        Task HandleMessageAsync(string message, int userId);
+        Task<string> GetRandomDocAsync(string searchString);
     }
 }

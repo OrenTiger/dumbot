@@ -130,7 +130,7 @@ namespace DumBot.Services
 
                 if (string.Compare(command, BotCommands.CatGif, StringComparison.InvariantCultureIgnoreCase) == 0)
                 {
-                    var attachmentString = await GetRandomDocAsync("cat");
+                    var attachmentString = await GetRandomDocAsync("cat gif");
                     if (string.IsNullOrEmpty(attachmentString))
                     {
                         await SendMessageAsync(userId, "Не удалось найти котиков &#128575;. Попробуйте позже");

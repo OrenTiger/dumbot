@@ -8,7 +8,9 @@ using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 using System.Linq;
 using DumBot.Models;
+using DumBot.Models.Forecast;
 using System.Net;
+using System.Text;
 
 namespace DumBot.Services
 {
@@ -122,15 +124,8 @@ namespace DumBot.Services
                 {
                     await SendMessageAsync(userId,
                         $@"&#128220; /{BotCommands.Help} - список команд
-&#127926; /{BotCommands.Music} - случайная аудиозапись
 &#128008; /{BotCommands.CatGif} - случайный котик
-&#9728; /{BotCommands.Weather} название_города - текущая погода");
-                    return;
-                }
-
-                if (string.Compare(command, BotCommands.Music, StringComparison.InvariantCultureIgnoreCase) == 0)
-                {
-                    await SendMessageAsync(userId, "Функция в разработке...");
+&#9728; /{BotCommands.Weather} название_города - прогноз погоды на 24 часа");
                     return;
                 }
 
@@ -152,9 +147,8 @@ namespace DumBot.Services
                 if (string.Compare(command, BotCommands.Weather, StringComparison.InvariantCultureIgnoreCase) == 0)
                 {
                     var city = message
-                        .Trim()
-                        .ToLowerInvariant()
-                        .Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).FirstOrDefault();
+                        .Replace(BotCommands.Weather, string.Empty, StringComparison.InvariantCultureIgnoreCase)
+                        .Trim('/', ' ');
 
                     string weatherInfoMessage = string.Empty;
 
@@ -247,15 +241,19 @@ namespace DumBot.Services
             if (response.IsSuccessStatusCode)
             {
                 var result = response.Content.ReadAsStringAsync().Result;
-                var jsonResult = JObject.Parse(JsonConvert.DeserializeObject(result).ToString());
+                var forecast = JsonConvert.DeserializeObject<ForecastModel>(result);
 
-                string currentWeather = jsonResult["weather"]?.FirstOrDefault()?.Value<string>("description");
-                string currentTemp = jsonResult["main"]?.Value<string>("temp");
-                string wind = jsonResult["wind"]?.Value<string>("speed");
+                StringBuilder resultString = new StringBuilder();
 
-                return $@"Облачность: {currentWeather}
-Температура: {currentTemp} °C
-Ветер: {wind} м/c";
+                for (int i = 0; i <= 8; i++)
+                {
+                    resultString.Append($@"Время: {forecast.List[i].Dt_txt}
+Облачность: {forecast.List[i].Weather.FirstOrDefault()?.Description}
+Температура: {forecast.List[i].Main.Temp} °C
+Ветер: {forecast.List[i].Wind.Speed} м/c").AppendLine().AppendLine();
+                }
+
+                return resultString.ToString();
             }
             else
             {

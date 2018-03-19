@@ -11,6 +11,7 @@ using DumBot.Models;
 using DumBot.Models.Forecast;
 using System.Net;
 using System.Text;
+using DumBot.Resources;
 
 namespace DumBot.Services
 {
@@ -26,6 +27,7 @@ namespace DumBot.Services
         private readonly string _weatherApiAccessToken;
         private readonly string _getWeatherInfoUrl;
         private readonly string _apiVersion;
+        private readonly string _docsSearchString;
 
         public BotService(IConfiguration configuration, ILogger<BotService> logger)
         {
@@ -39,6 +41,7 @@ namespace DumBot.Services
             _accessToken = _configuration["AccessToken"];
             _apiVersion = _configuration.GetSection("AppSettings")["VkApiVersion"];
             _weatherApiAccessToken = _configuration["WeatherApiAccessToken"];
+            _docsSearchString = _configuration["DocsSearchString"];
         }
 
         public async Task SendMessageAsync(int userId, string message, string attachment = "")
@@ -122,19 +125,22 @@ namespace DumBot.Services
                 
                 if (string.Compare(command, BotCommands.Help, StringComparison.InvariantCultureIgnoreCase) == 0)
                 {
-                    await SendMessageAsync(userId,
-                        $@"&#128220; /{BotCommands.Help} - список команд
-&#128008; /{BotCommands.CatGif} - случайный котик
-&#9728; /{BotCommands.Weather} название_города - прогноз погоды на 24 часа");
+                    var replyMessage = new StringBuilder()
+                        .AppendLine(string.Format(BotMessages.HelpCommandDescription, BotCommands.Help))
+                        .AppendLine(string.Format(BotMessages.CatGifCommandDescription, BotCommands.CatGif))
+                        .AppendLine(string.Format(BotMessages.WeatherCommandDescription, BotCommands.Weather))
+                        .ToString();
+
+                    await SendMessageAsync(userId, replyMessage);
                     return;
                 }
 
                 if (string.Compare(command, BotCommands.CatGif, StringComparison.InvariantCultureIgnoreCase) == 0)
                 {
-                    var attachmentString = await GetRandomDocAsync("cat gif");
+                    var attachmentString = await GetRandomDocAsync(_docsSearchString);
                     if (string.IsNullOrEmpty(attachmentString))
                     {
-                        await SendMessageAsync(userId, "Не удалось найти котиков &#128575;. Попробуйте позже");
+                        await SendMessageAsync(userId, BotMessages.CatsNotFound);
                         return;
                     }
                     else
@@ -153,25 +159,25 @@ namespace DumBot.Services
                     string weatherInfoMessage = string.Empty;
 
                     weatherInfoMessage = string.IsNullOrEmpty(city)
-                        ? "Не указан город"
+                        ? BotMessages.CityNotSpecified
                         : await GetWeatherInfoAsync(city);
 
                     await SendMessageAsync(userId, weatherInfoMessage);
                     return;
                 }
 
-                await SendMessageAsync(userId, $"Неизвестная команда. Наберите /{BotCommands.Help} для вывода списка команд");
+                await SendMessageAsync(userId, $"{BotMessages.UnknownCommand}. {string.Format(BotMessages.UseHelp, BotCommands.Help)}");
                 return;
             }
-            else if (message.ToLowerInvariant().Contains(BotCommands.Hi.ToLowerInvariant()))
+            else if (message.ToLowerInvariant().Contains(BotCommands.Hi))
             {
                 string userName = await GetUserNameAsync(userId);
-                string replyMessage = string.IsNullOrEmpty(userName) ? $"{BotCommands.Hi}!" : $"{BotCommands.Hi}, {userName}!";
+                string replyMessage = string.IsNullOrEmpty(userName) ? $"{BotMessages.Greeting}!" : $"{BotMessages.Greeting}, {userName}!";
                 await SendMessageAsync(userId, replyMessage);
                 return;                  
             }
 
-            await SendMessageAsync(userId, $"Я тупой бот, понимаю только команды. Наберите /{BotCommands.Help} для вывода списка команд");
+            await SendMessageAsync(userId, $"{BotMessages.DumbBot}. {string.Format(BotMessages.UseHelp, BotCommands.Help)}");
         }
 
         public async Task<string> GetRandomDocAsync(string searchString)
@@ -236,7 +242,7 @@ namespace DumBot.Services
 
             HttpClient httpClient = new HttpClient();
 
-            var response = await httpClient.GetAsync($"{_getWeatherInfoUrl}?APPID={_weatherApiAccessToken}&q={city}&units=metric&lang=ru");
+            var response = await httpClient.GetAsync($"{_getWeatherInfoUrl}?APPID={_weatherApiAccessToken}&q={city}&units=metric");
 
             if (response.IsSuccessStatusCode)
             {
@@ -247,10 +253,12 @@ namespace DumBot.Services
 
                 for (int i = 0; i <= 8; i++)
                 {
-                    resultString.Append($@"Время: {forecast.List[i].Dt_txt}
-Облачность: {forecast.List[i].Weather.FirstOrDefault()?.Description}
-Температура: {forecast.List[i].Main.Temp} °C
-Ветер: {forecast.List[i].Wind.Speed} м/c").AppendLine().AppendLine();
+                    resultString
+                        .AppendLine(string.Format(BotMessages.Forecast_Time, forecast.List[i].Dt_txt))
+                        .AppendLine(string.Format(BotMessages.Forecast_Weather, forecast.List[i].Weather.FirstOrDefault()?.Description))
+                        .AppendLine(string.Format(BotMessages.Forecast_Temperature, forecast.List[i].Main.Temp))
+                        .AppendLine(string.Format(BotMessages.Forecast_Wind, forecast.List[i].Wind.Speed))
+                        .AppendLine();
                 }
 
                 return resultString.ToString();
@@ -258,10 +266,10 @@ namespace DumBot.Services
             else
             {
                 if (response.StatusCode == HttpStatusCode.NotFound)
-                    return "Город не найден";
+                    return BotMessages.UnknownCommand;
 
                 _logger.LogError($"Get weather info failed. Status code: {response.StatusCode}");
-                return "Не удалось получить информацию, попробуйте позже";
+                return BotMessages.TryAgainLater;
             }
         }
     }

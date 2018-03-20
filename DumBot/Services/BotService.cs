@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using DumBot.Models;
 using DumBot.Models.Forecast;
+using DumBot.Models.Doc;
 using System.Net;
 using System.Text;
 using DumBot.Resources;
@@ -28,6 +29,7 @@ namespace DumBot.Services
         private readonly string _getWeatherInfoUrl;
         private readonly string _apiVersion;
         private readonly string _docsSearchString;
+        private readonly int _forecastIntervalCount;
 
         public BotService(IConfiguration configuration, ILogger<BotService> logger)
         {
@@ -41,7 +43,8 @@ namespace DumBot.Services
             _accessToken = _configuration["AccessToken"];
             _apiVersion = _configuration.GetSection("AppSettings")["VkApiVersion"];
             _weatherApiAccessToken = _configuration["WeatherApiAccessToken"];
-            _docsSearchString = _configuration["DocsSearchString"];
+            _docsSearchString = _configuration.GetSection("AppSettings")["DocsSearchString"];
+            _forecastIntervalCount = int.Parse(_configuration.GetSection("AppSettings")["ForecastIntervalCount"]);
         }
 
         public async Task SendMessageAsync(int userId, string message, string attachment = "")
@@ -138,6 +141,7 @@ namespace DumBot.Services
                 if (string.Compare(command, BotCommands.CatGif, StringComparison.InvariantCultureIgnoreCase) == 0)
                 {
                     var attachmentString = await GetRandomDocAsync(_docsSearchString);
+                    
                     if (string.IsNullOrEmpty(attachmentString))
                     {
                         await SendMessageAsync(userId, BotMessages.CatsNotFound);
@@ -214,16 +218,20 @@ namespace DumBot.Services
                 }
                 else
                 {
-                    var responseJson = jsonResult["response"];
-                    var docId = responseJson["items"].FirstOrDefault()?.Value<string>("id");
-                    var ownerId = responseJson["items"].FirstOrDefault()?.Value<string>("owner_id");
-                    
-                    if (string.IsNullOrEmpty(docId) || string.IsNullOrEmpty(ownerId))
+                    try
                     {
+                        var docs = JsonConvert.DeserializeObject<Docs>(jsonResult["response"].ToString());
+
+                        if (docs.Items.Count == 0)
+                            return string.Empty;
+
+                        return $"doc{docs.Items.FirstOrDefault().Owner_id}_{docs.Items.FirstOrDefault().Id}";
+                    }
+                    catch (JsonSerializationException exception)
+                    {
+                        _logger.LogError($"Docs search failed. Exception while deserializing object. Exception details: {exception}");
                         return string.Empty;
                     }
-
-                    return $"doc{ownerId}_{docId}";
                 }
             }
             else
@@ -247,26 +255,40 @@ namespace DumBot.Services
             if (response.IsSuccessStatusCode)
             {
                 var result = response.Content.ReadAsStringAsync().Result;
-                var forecast = JsonConvert.DeserializeObject<ForecastModel>(result);
 
-                StringBuilder resultString = new StringBuilder();
-
-                for (int i = 0; i <= 8; i++)
+                try
                 {
-                    resultString
-                        .AppendLine(string.Format(BotMessages.Forecast_Time, forecast.List[i].Dt_txt))
-                        .AppendLine(string.Format(BotMessages.Forecast_Weather, forecast.List[i].Weather.FirstOrDefault()?.Description))
-                        .AppendLine(string.Format(BotMessages.Forecast_Temperature, forecast.List[i].Main.Temp))
-                        .AppendLine(string.Format(BotMessages.Forecast_Wind, forecast.List[i].Wind.Speed))
-                        .AppendLine();
-                }
+                    var forecast = JsonConvert.DeserializeObject<ForecastModel>(result);
 
-                return resultString.ToString();
+                    StringBuilder resultString = new StringBuilder();
+
+                    for (int i = 0; i <= _forecastIntervalCount; i++)
+                    {
+                        resultString
+                            .AppendLine(string.Format(BotMessages.Forecast_Time, forecast.List[i].Dt_txt))
+                            .AppendLine(string.Format(BotMessages.Forecast_Weather, forecast.List[i].Weather.FirstOrDefault()?.Description))
+                            .AppendLine(string.Format(BotMessages.Forecast_Temperature, forecast.List[i].Main.Temp))
+                            .AppendLine(string.Format(BotMessages.Forecast_Wind, forecast.List[i].Wind.Speed))
+                            .AppendLine();
+                    }
+
+                    return resultString.ToString();
+                }
+                catch (JsonSerializationException exception)
+                {
+                    _logger.LogError($"Get weather info failed. Exception while deserializing object. Exception details: {exception}");
+                    return BotMessages.TryAgainLater;
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogError($"Get weather info failed. Exception details: {exception}");
+                    return BotMessages.TryAgainLater;
+                }
             }
             else
             {
                 if (response.StatusCode == HttpStatusCode.NotFound)
-                    return BotMessages.UnknownCommand;
+                    return BotMessages.CityNotFound;
 
                 _logger.LogError($"Get weather info failed. Status code: {response.StatusCode}");
                 return BotMessages.TryAgainLater;

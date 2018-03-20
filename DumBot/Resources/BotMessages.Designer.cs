@@ -79,6 +79,15 @@ namespace DumBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to City not found.
+        /// </summary>
+        internal static string CityNotFound {
+            get {
+                return ResourceManager.GetString("CityNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to City not specified.
         /// </summary>
         internal static string CityNotSpecified {

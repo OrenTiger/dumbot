@@ -123,6 +123,9 @@
   <data name="CatsNotFound" xml:space="preserve">
     <value>Sorry, I didn't find any cats. &amp;#128575;. Try again later.</value>
   </data>
+  <data name="CityNotFound" xml:space="preserve">
+    <value>City not found</value>
+  </data>
   <data name="CityNotSpecified" xml:space="preserve">
     <value>City not specified</value>
   </data>

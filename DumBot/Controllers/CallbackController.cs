@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
-using DumBot.Models;
+using DumBot.Models.Callback;
 using DumBot.Services;
+using Newtonsoft.Json;
 
 namespace DumBot.Controllers
 {
@@ -51,14 +52,18 @@ namespace DumBot.Controllers
             switch (callbackEvent.Type)
             {
                 case CallbackEventType.Confirmation:
-                    if (callbackEvent.Group_id == _serverConfirmationGroupId)
-                        return Ok(new { Value = _serverConfirmationReplyString });
-                    else return BadRequest();
-                case CallbackEventType.NewMessage:
-                    string message = JObject.Parse(callbackEvent.Object.ToString())["body"].Value<string>();
-                    int userId = JObject.Parse(callbackEvent.Object.ToString())["user_id"].Value<int>();
+                    if (callbackEvent.Group_id != _serverConfirmationGroupId)
+                    {
+                        _logger.LogWarning($"Callback server confirmation failed. Group ids are mismatch. GroupId: {callbackEvent.Group_id}");
+                        return BadRequest();
+                    }
 
-                    await _botService.HandleMessageAsync(message, userId);
+                    return Ok(new { Value = _serverConfirmationReplyString });
+                case CallbackEventType.NewMessage:
+
+                    var message = JsonConvert.DeserializeObject<MessageModel>(callbackEvent.Object.ToString());
+
+                    await _botService.HandleMessageAsync(message.Body, message.User_id);
 
                     return Ok("ok");
                 default:

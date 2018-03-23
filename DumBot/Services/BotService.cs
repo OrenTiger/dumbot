@@ -248,9 +248,18 @@ namespace DumBot.Services
                 throw new ArgumentException();
             }
 
+            HttpResponseMessage response = new HttpResponseMessage();
             HttpClient httpClient = new HttpClient();
 
-            var response = await httpClient.GetAsync($"{_getWeatherInfoUrl}?APPID={_weatherApiAccessToken}&q={city}&units=metric");
+            try
+            {
+                response = await httpClient.GetAsync($"{_getWeatherInfoUrl}?APPID={_weatherApiAccessToken}&q={city}&units=metric");
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError($"Get weather info failed. Exception details: {exception}");
+                return BotMessages.TryAgainLater;
+            }
 
             if (response.IsSuccessStatusCode)
             {

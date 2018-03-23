@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net.Http;
 using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -13,38 +12,19 @@ using DumBot.Models.Doc;
 using System.Net;
 using System.Text;
 using DumBot.Resources;
+using DumBot.Infrastructure;
 
 namespace DumBot.Services
 {
     public class BotService : IBotService
     {
-        private readonly IConfiguration _configuration;
+        private readonly IApplicationSettings _settings;
         private readonly ILogger<BotService> _logger;
 
-        private readonly string _sendMessageUrl;
-        private readonly string _getUsersUrl;
-        private readonly string _searchDocsUrl;
-        private readonly string _accessToken;
-        private readonly string _weatherApiAccessToken;
-        private readonly string _getWeatherInfoUrl;
-        private readonly string _apiVersion;
-        private readonly string _docsSearchString;
-        private readonly int _forecastIntervalCount;
-
-        public BotService(IConfiguration configuration, ILogger<BotService> logger)
+        public BotService(IApplicationSettings settings, ILogger<BotService> logger)
         {
-            _configuration = configuration;
+            _settings = settings;
             _logger = logger;
-
-            _sendMessageUrl = _configuration.GetSection("AppSettings")["SendMessageUrl"];
-            _getUsersUrl = _configuration.GetSection("AppSettings")["GetUsersUrl"];
-            _searchDocsUrl = _configuration.GetSection("AppSettings")["SearchDocsUrl"];
-            _getWeatherInfoUrl = _configuration.GetSection("AppSettings")["GetWeatherInfoUrl"];
-            _accessToken = _configuration["AccessToken"];
-            _apiVersion = _configuration.GetSection("AppSettings")["VkApiVersion"];
-            _weatherApiAccessToken = _configuration["WeatherApiAccessToken"];
-            _docsSearchString = _configuration.GetSection("AppSettings")["DocsSearchString"];
-            _forecastIntervalCount = int.Parse(_configuration.GetSection("AppSettings")["ForecastIntervalCount"]);
         }
 
         public async Task SendMessageAsync(int userId, string message, string attachment = "")
@@ -55,12 +35,12 @@ namespace DumBot.Services
             {
                 new KeyValuePair<string, string>("user_id", userId.ToString()),
                 new KeyValuePair<string, string>("message", message),
-                new KeyValuePair<string, string>("access_token", _accessToken),
-                new KeyValuePair<string, string>("v", _apiVersion),
+                new KeyValuePair<string, string>("access_token", _settings.AccessToken),
+                new KeyValuePair<string, string>("v", _settings.ApiVersion),
                 new KeyValuePair<string, string>("attachment", attachment)
             });
 
-            var response = await httpClient.PostAsync(_sendMessageUrl, stringContent);
+            var response = await httpClient.PostAsync(_settings.SendMessageUrl, stringContent);
 
             if (response.IsSuccessStatusCode)
             {
@@ -84,11 +64,11 @@ namespace DumBot.Services
             var stringContent = new FormUrlEncodedContent(new[]
             {
                 new KeyValuePair<string, string>("user_id", userId.ToString()),
-                new KeyValuePair<string, string>("access_token", _accessToken),
-                new KeyValuePair<string, string>("v", _apiVersion)
+                new KeyValuePair<string, string>("access_token", _settings.AccessToken),
+                new KeyValuePair<string, string>("v", _settings.ApiVersion)
             });
 
-            var response = await httpClient.PostAsync(_getUsersUrl, stringContent);
+            var response = await httpClient.PostAsync(_settings.GetUsersUrl, stringContent);
 
             if (response.IsSuccessStatusCode)
             {
@@ -140,7 +120,7 @@ namespace DumBot.Services
 
                 if (string.Compare(command, BotCommands.CatGif, StringComparison.InvariantCultureIgnoreCase) == 0)
                 {
-                    var attachmentString = await GetRandomDocAsync(_docsSearchString);
+                    var attachmentString = await GetRandomDocAsync(_settings.DocsSearchString);
                     
                     if (string.IsNullOrEmpty(attachmentString))
                     {
@@ -201,11 +181,11 @@ namespace DumBot.Services
                 new KeyValuePair<string, string>("q", searchString),
                 new KeyValuePair<string, string>("offset", offset.ToString()),
                 new KeyValuePair<string, string>("count", "1"),
-                new KeyValuePair<string, string>("access_token", _accessToken),
-                new KeyValuePair<string, string>("v", _apiVersion)
+                new KeyValuePair<string, string>("access_token", _settings.AccessToken),
+                new KeyValuePair<string, string>("v", _settings.ApiVersion)
             });
 
-            var response = await httpClient.PostAsync(_searchDocsUrl, stringContent);
+            var response = await httpClient.PostAsync(_settings.SearchDocsUrl, stringContent);
 
             if (response.IsSuccessStatusCode)
             {
@@ -253,7 +233,7 @@ namespace DumBot.Services
 
             try
             {
-                response = await httpClient.GetAsync($"{_getWeatherInfoUrl}?APPID={_weatherApiAccessToken}&q={city}&units=metric");
+                response = await httpClient.GetAsync($"{_settings.GetWeatherInfoUrl}?APPID={_settings.WeatherApiAccessToken}&q={city}&units=metric");
             }
             catch (Exception exception)
             {
@@ -271,7 +251,7 @@ namespace DumBot.Services
 
                     StringBuilder resultString = new StringBuilder();
 
-                    for (int i = 0; i <= _forecastIntervalCount; i++)
+                    for (int i = 0; i <= _settings.ForecastIntervalCount; i++)
                     {
                         resultString
                             .AppendLine(string.Format(BotMessages.Forecast_Time, forecast.List[i].Dt_txt))

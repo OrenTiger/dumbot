@@ -1,33 +1,26 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using DumBot.Models.Callback;
 using DumBot.Services;
 using Newtonsoft.Json;
+using DumBot.Infrastructure;
 
 namespace DumBot.Controllers
 {
     [Route("[controller]")]
     public class CallbackController : Controller
     {
-        private readonly IConfiguration _configuration;
+        private readonly IApplicationSettings _settings;
         private readonly IBotService _botService;
         private readonly ILogger<CallbackController> _logger;
-
-        private readonly int _serverConfirmationGroupId;
-        private readonly string _serverConfirmationReplyString;
         
-        public CallbackController(IConfiguration configuration, IBotService botService,
+        public CallbackController(IApplicationSettings settings, IBotService botService,
             ILogger<CallbackController> logger)
         {
-            _configuration = configuration;
+            _settings = settings;
             _botService = botService;
             _logger = logger;
-
-            _serverConfirmationGroupId = int.Parse(_configuration["ServerConfirmationGroupId"]);
-            _serverConfirmationReplyString = _configuration["ServerConfirmationReplyString"];
         }
 
         // GET /callback
@@ -52,13 +45,13 @@ namespace DumBot.Controllers
             switch (callbackEvent.Type)
             {
                 case CallbackEventType.Confirmation:
-                    if (callbackEvent.Group_id != _serverConfirmationGroupId)
+                    if (callbackEvent.Group_id != _settings.ServerConfirmationGroupId)
                     {
                         _logger.LogWarning($"Callback server confirmation failed. Group ids are mismatch. GroupId: {callbackEvent.Group_id}");
                         return BadRequest();
                     }
 
-                    return Ok(new { Value = _serverConfirmationReplyString });
+                    return Ok(new { Value = _settings.ServerConfirmationReplyString });
                 case CallbackEventType.NewMessage:
 
                     var message = JsonConvert.DeserializeObject<MessageModel>(callbackEvent.Object.ToString());

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using DumBot.Services;
+using DumBot.Infrastructure;
 
 namespace DumBot
 {
@@ -20,7 +21,8 @@ namespace DumBot
         {
             services.AddMvc();
 
-            services.AddTransient<IBotService, BotService>();
+            services.AddSingleton<IApplicationSettings, ApplicationSettings>();
+            services.AddTransient<IBotService, BotService>();            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

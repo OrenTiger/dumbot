@@ -27,7 +27,7 @@ namespace DumBot.Services
             _logger = logger;
         }
 
-        public async Task SendMessageAsync(int userId, string message, string attachment = "")
+        public virtual async Task SendMessageAsync(int userId, string message, string attachment = "")
         {
             HttpClient httpClient = new HttpClient();
             
@@ -96,7 +96,7 @@ namespace DumBot.Services
             }
         }
 
-        public async Task HandleMessageAsync(string message, int userId)
+        public virtual async Task HandleMessageAsync(string message, int userId)
         {
             if (message.Trim().StartsWith('/'))
             {
@@ -164,7 +164,7 @@ namespace DumBot.Services
             await SendMessageAsync(userId, $"{BotMessages.DumbBot}. {string.Format(BotMessages.UseHelp, BotCommands.Help)}");
         }
 
-        public async Task<string> GetRandomDocAsync(string searchString)
+        public virtual async Task<string> GetRandomDocAsync(string searchString)
         {
             if (string.IsNullOrEmpty(searchString))
             {

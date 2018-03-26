@@ -22,7 +22,7 @@ namespace DumBot.Resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class BotMessages {
+    public class BotMessages {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace DumBot.Resources {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("DumBot.Resources.BotMessages", typeof(BotMessages).Assembly);
@@ -51,7 +51,7 @@ namespace DumBot.Resources {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace DumBot.Resources {
         /// <summary>
         ///   Looks up a localized string similar to &amp;#128008; /{0} - random cat gif.
         /// </summary>
-        internal static string CatGifCommandDescription {
+        public static string CatGifCommandDescription {
             get {
                 return ResourceManager.GetString("CatGifCommandDescription", resourceCulture);
             }
@@ -72,7 +72,7 @@ namespace DumBot.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Sorry, I didn&apos;t find any cats. &amp;#128575;. Try again later..
         /// </summary>
-        internal static string CatsNotFound {
+        public static string CatsNotFound {
             get {
                 return ResourceManager.GetString("CatsNotFound", resourceCulture);
             }
@@ -81,7 +81,7 @@ namespace DumBot.Resources {
         /// <summary>
         ///   Looks up a localized string similar to City not found.
         /// </summary>
-        internal static string CityNotFound {
+        public static string CityNotFound {
             get {
                 return ResourceManager.GetString("CityNotFound", resourceCulture);
             }
@@ -90,7 +90,7 @@ namespace DumBot.Resources {
         /// <summary>
         ///   Looks up a localized string similar to City not specified.
         /// </summary>
-        internal static string CityNotSpecified {
+        public static string CityNotSpecified {
             get {
                 return ResourceManager.GetString("CityNotSpecified", resourceCulture);
             }
@@ -99,7 +99,7 @@ namespace DumBot.Resources {
         /// <summary>
         ///   Looks up a localized string similar to I&apos;m a dumb bot, I can understand only commands.
         /// </summary>
-        internal static string DumbBot {
+        public static string DumbBot {
             get {
                 return ResourceManager.GetString("DumbBot", resourceCulture);
             }
@@ -108,7 +108,7 @@ namespace DumBot.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Temperature: {0} °C.
         /// </summary>
-        internal static string Forecast_Temperature {
+        public static string Forecast_Temperature {
             get {
                 return ResourceManager.GetString("Forecast_Temperature", resourceCulture);
             }
@@ -117,7 +117,7 @@ namespace DumBot.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Time: {0}.
         /// </summary>
-        internal static string Forecast_Time {
+        public static string Forecast_Time {
             get {
                 return ResourceManager.GetString("Forecast_Time", resourceCulture);
             }
@@ -126,7 +126,7 @@ namespace DumBot.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Weather: {0}.
         /// </summary>
-        internal static string Forecast_Weather {
+        public static string Forecast_Weather {
             get {
                 return ResourceManager.GetString("Forecast_Weather", resourceCulture);
             }
@@ -135,7 +135,7 @@ namespace DumBot.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Wind: {0} m/s.
         /// </summary>
-        internal static string Forecast_Wind {
+        public static string Forecast_Wind {
             get {
                 return ResourceManager.GetString("Forecast_Wind", resourceCulture);
             }
@@ -144,7 +144,7 @@ namespace DumBot.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Hi.
         /// </summary>
-        internal static string Greeting {
+        public static string Greeting {
             get {
                 return ResourceManager.GetString("Greeting", resourceCulture);
             }
@@ -153,7 +153,7 @@ namespace DumBot.Resources {
         /// <summary>
         ///   Looks up a localized string similar to &amp;#128220; /{0} - commands list.
         /// </summary>
-        internal static string HelpCommandDescription {
+        public static string HelpCommandDescription {
             get {
                 return ResourceManager.GetString("HelpCommandDescription", resourceCulture);
             }
@@ -162,7 +162,7 @@ namespace DumBot.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Unable to get the information, try again later.
         /// </summary>
-        internal static string TryAgainLater {
+        public static string TryAgainLater {
             get {
                 return ResourceManager.GetString("TryAgainLater", resourceCulture);
             }
@@ -171,7 +171,7 @@ namespace DumBot.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Unknown command.
         /// </summary>
-        internal static string UnknownCommand {
+        public static string UnknownCommand {
             get {
                 return ResourceManager.GetString("UnknownCommand", resourceCulture);
             }
@@ -180,7 +180,7 @@ namespace DumBot.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Type &quot;/{0}&quot; for commands list.
         /// </summary>
-        internal static string UseHelp {
+        public static string UseHelp {
             get {
                 return ResourceManager.GetString("UseHelp", resourceCulture);
             }
@@ -189,7 +189,7 @@ namespace DumBot.Resources {
         /// <summary>
         ///   Looks up a localized string similar to &amp;#9728; /{0} city_name - weather forecast for the next 24 hours.
         /// </summary>
-        internal static string WeatherCommandDescription {
+        public static string WeatherCommandDescription {
             get {
                 return ResourceManager.GetString("WeatherCommandDescription", resourceCulture);
             }

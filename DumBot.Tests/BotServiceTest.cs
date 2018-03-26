@@ -6,30 +6,51 @@ using Microsoft.Extensions.Logging;
 using DumBot.Models;
 using System.Threading.Tasks;
 using AutoFixture;
+using DumBot.Resources;
 
 namespace DumBot.Tests
 {
     [TestClass]
     public class BotServiceTest
     {
+        Mock<BotService> _botService;
+        Fixture _fixture;
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            _fixture = new Fixture();
+            _botService = new Mock<BotService>(new Mock<IApplicationSettings>().Object,
+                new Mock<ILogger<BotService>>().Object);
+
+            _botService.CallBase = true;
+            _botService.Setup(x => x.SendMessageAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
+        }
+
         [TestMethod]
-        public async Task Handle_Message_Should_Accept_Correct_Command()
+        public async Task HandleMessage_CorrectCommand_ShouldAccept()
         {
             // Arrange
-            var applicationSettings = new Mock<IApplicationSettings>().Object;
-            var logger = new Mock<ILogger<BotService>>().Object;
-            var botService = new Mock<BotService>(applicationSettings, logger);
-            var fixture = new Fixture();
-
-            botService.CallBase = true;
-            botService.Setup(x => x.SendMessageAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
-            botService.Setup(x => x.GetRandomDocAsync(It.IsAny<string>())).Returns(Task.FromResult(fixture.Create<string>()));
+            _botService.Setup(x => x.GetRandomDocAsync(It.IsAny<string>())).Returns(Task.FromResult(_fixture.Create<string>()));
 
             // Act
-            await botService.Object.HandleMessageAsync($"/{BotCommands.CatGif}", It.IsAny<int>());
+            await _botService.Object.HandleMessageAsync($"/{BotCommands.CatGif}", It.IsAny<int>());
 
             // Assert
-            botService.Verify(x => x.SendMessageAsync(It.IsAny<int>(), string.Empty, It.IsAny<string>()), Times.Once);
+            _botService.Verify(x => x.SendMessageAsync(It.IsAny<int>(), string.Empty, It.IsAny<string>()), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task HandleMessage_IncorrectCommand_ShouldReturnHelpMessage()
+        {
+            // Arrange
+            string useHelpMessage = $"{BotMessages.DumbBot}. {string.Format(BotMessages.UseHelp, BotCommands.Help)}";
+
+            // Act
+            await _botService.Object.HandleMessageAsync(_fixture.Create<string>(), It.IsAny<int>());
+
+            // Assert
+            _botService.Verify(x => x.SendMessageAsync(It.IsAny<int>(), useHelpMessage, string.Empty), Times.Once);
         }
     }
 }

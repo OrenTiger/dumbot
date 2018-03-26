@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DumBot.Resources\DumBot.Resources.csproj" />
     <ProjectReference Include="..\DumBot\DumBot.csproj" />
   </ItemGroup>
 

@@ -18,18 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Resources\BotMessages.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>BotMessages.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Resources\BotMessages.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>BotMessages.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <ProjectReference Include="..\DumBot.Resources\DumBot.Resources.csproj" />
   </ItemGroup>
 
 </Project>

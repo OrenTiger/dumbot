@@ -5,7 +5,9 @@ VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DumBot", "DumBot\DumBot.csproj", "{E8D523A9-829D-4AF1-8131-E82F6CF4FF35}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DumBot.Tests", "DumBot.Tests\DumBot.Tests.csproj", "{58DB1313-2B08-40CB-8F60-94BBE33FB520}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DumBot.Tests", "DumBot.Tests\DumBot.Tests.csproj", "{58DB1313-2B08-40CB-8F60-94BBE33FB520}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DumBot.Resources", "DumBot.Resources\DumBot.Resources.csproj", "{A4DA9A00-9D7E-4116-9DD7-D375B8EC486B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{58DB1313-2B08-40CB-8F60-94BBE33FB520}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58DB1313-2B08-40CB-8F60-94BBE33FB520}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58DB1313-2B08-40CB-8F60-94BBE33FB520}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4DA9A00-9D7E-4116-9DD7-D375B8EC486B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4DA9A00-9D7E-4116-9DD7-D375B8EC486B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4DA9A00-9D7E-4116-9DD7-D375B8EC486B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4DA9A00-9D7E-4116-9DD7-D375B8EC486B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

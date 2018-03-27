@@ -1,82 +1,67 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
-using DumBot.Models;
+﻿using DumBot.Infrastructure;
+using DumBot.Models.Callback;
 using DumBot.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace DumBot.Controllers
 {
     [Route("[controller]")]
     public class CallbackController : Controller
     {
-        private readonly IConfiguration _configuration;
+        private readonly IApplicationSettings _settings;
         private readonly IBotService _botService;
         private readonly ILogger<CallbackController> _logger;
-
-        private readonly int _serverConfirmationGroupId;
-        private readonly string _serverConfirmationReplyString;
         
-        public CallbackController(IConfiguration configuration, IBotService botService,
+        public CallbackController(IApplicationSettings settings, IBotService botService,
             ILogger<CallbackController> logger)
         {
-            _configuration = configuration;
+            _settings = settings;
             _botService = botService;
             _logger = logger;
-
-            _serverConfirmationGroupId = int.Parse(_configuration["ServerConfirmationGroupId"]);
-            _serverConfirmationReplyString = _configuration["ServerConfirmationReplyString"];
         }
 
-        // GET api/values
+        // GET /callback
         [HttpGet]
-        public IEnumerable<string> Get()
+        public string Get()
         {
-            return new string[] { "value1", "value2" };
+            return "ok";
         }
 
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
-
+        /// <summary>
+        /// POST: /callback
+        /// Handle incoming event
+        /// </summary>
         [HttpPost]
-        public string Post([FromBody]CallbackEventModel callbackEvent)
+        public async Task<ActionResult> Post([FromBody]CallbackEventModel callbackEvent)
         {
             if (string.IsNullOrEmpty(callbackEvent.Type))
             {
-                HttpContext.Response.StatusCode = 400;
-                return string.Empty;
+                return BadRequest();
             }
 
             switch (callbackEvent.Type)
             {
                 case CallbackEventType.Confirmation:
-                    return callbackEvent.Group_id == _serverConfirmationGroupId
-                        ? _serverConfirmationReplyString
-                        : string.Empty;
+                    if (callbackEvent.Group_id != _settings.ServerConfirmationGroupId)
+                    {
+                        _logger.LogWarning($"Callback server confirmation failed. Group ids are mismatch. GroupId: {callbackEvent.Group_id}");
+                        return BadRequest();
+                    }
+
+                    return Ok(new { Value = _settings.ServerConfirmationReplyString });
                 case CallbackEventType.NewMessage:
-                    int userId = JObject.Parse(callbackEvent.Object.ToString())["user_id"].Value<int>();
-                    _botService.SendMessage(userId, "Test message");
-                    return "ok";
+
+                    var message = JsonConvert.DeserializeObject<MessageModel>(callbackEvent.Object.ToString());
+
+                    await _botService.HandleMessageAsync(message.Body, message.User_id);
+
+                    return Ok("ok");
                 default:
-                    return "ok";
+                    return Ok("ok");
             }
-        }
-
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
         }
     }
 }

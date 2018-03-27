@@ -1,4 +1,4 @@
-﻿namespace DumBot.Models
+﻿namespace DumBot.Models.Callback
 {
     public static class CallbackEventType
     {

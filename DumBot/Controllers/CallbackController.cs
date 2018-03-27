@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+﻿using DumBot.Infrastructure;
 using DumBot.Models.Callback;
 using DumBot.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using DumBot.Infrastructure;
+using System.Threading.Tasks;
 
 namespace DumBot.Controllers
 {

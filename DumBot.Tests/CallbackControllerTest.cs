@@ -1,15 +1,14 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using DumBot.Services;
-using DumBot.Models;
-using Moq;
-using Microsoft.Extensions.Logging;
-using AutoFixture;
-using DumBot.Infrastructure;
-using DumBot.Controllers;
-using DumBot.Models.Callback;
-using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
 using Newtonsoft.Json;
+using AutoFixture;
+using Moq;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using DumBot.Controllers;
+using DumBot.Infrastructure;
+using DumBot.Models.Callback;
+using DumBot.Services;
 
 namespace DumBot.Tests
 {
@@ -38,7 +37,7 @@ namespace DumBot.Tests
 
             CallbackEventModel callbackEventModel = new CallbackEventModel()
             {
-                Type = "confirmation",
+                Type = CallbackEventType.Confirmation,
                 Group_id = groupId
             };
 

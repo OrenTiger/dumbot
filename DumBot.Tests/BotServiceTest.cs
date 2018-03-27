@@ -1,12 +1,12 @@
-using DumBot.Services;
-using DumBot.Infrastructure;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Microsoft.Extensions.Logging;
-using DumBot.Models;
-using System.Threading.Tasks;
 using AutoFixture;
+using DumBot.Infrastructure;
+using DumBot.Models;
 using DumBot.Resources;
+using DumBot.Services;
 
 namespace DumBot.Tests
 {

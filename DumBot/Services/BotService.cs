@@ -1,18 +1,18 @@
 ﻿using System;
-using System.Net.Http;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Threading.Tasks;
-using System.Linq;
-using DumBot.Models;
-using DumBot.Models.Forecast;
-using DumBot.Models.Doc;
-using System.Net;
-using System.Text;
-using DumBot.Resources;
 using DumBot.Infrastructure;
+using DumBot.Models;
+using DumBot.Models.Doc;
+using DumBot.Models.Forecast;
+using DumBot.Resources;
 
 namespace DumBot.Services
 {
@@ -27,6 +27,12 @@ namespace DumBot.Services
             _logger = logger;
         }
 
+        /// <summary>
+        /// Sends message to user
+        /// </summary>
+        /// <param name="userId">User ID</param>
+        /// <param name="message">Text message</param>
+        /// <param name="attachment">Message attachment</param>
         public virtual async Task SendMessageAsync(int userId, string message, string attachment = "")
         {
             HttpClient httpClient = new HttpClient();
@@ -57,6 +63,11 @@ namespace DumBot.Services
             }
         }
 
+        /// <summary>
+        /// Gets user name by user ID
+        /// </summary>
+        /// <param name="userId">User ID</param>
+        /// <returns>User name</returns>
         public async Task<string> GetUserNameAsync(int userId)
         {
             HttpClient httpClient = new HttpClient();
@@ -96,6 +107,11 @@ namespace DumBot.Services
             }
         }
 
+        /// <summary>
+        /// Handle incoming message from user
+        /// </summary>
+        /// <param name="message">Message text</param>
+        /// <param name="userId">User ID</param>
         public virtual async Task HandleMessageAsync(string message, int userId)
         {
             if (message.Trim().StartsWith('/'))
@@ -164,6 +180,11 @@ namespace DumBot.Services
             await SendMessageAsync(userId, $"{BotMessages.DumbBot}. {string.Format(BotMessages.UseHelp, BotCommands.Help)}");
         }
 
+        /// <summary>
+        /// Gets random document by specified search string
+        /// </summary>
+        /// <param name="searchString">Search string</param>
+        /// <returns>String with document ID</returns>
         public virtual async Task<string> GetRandomDocAsync(string searchString)
         {
             if (string.IsNullOrEmpty(searchString))
@@ -221,6 +242,11 @@ namespace DumBot.Services
             }
         }
 
+        /// <summary>
+        /// Gets the weather forecast by specified city
+        /// </summary>
+        /// <param name="city">City name</param>
+        /// <returns>Weather forecast</returns>
         public async Task<string> GetWeatherInfoAsync(string city)
         {
             if (string.IsNullOrEmpty(city)) 

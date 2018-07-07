@@ -41,7 +41,7 @@ namespace DumBot.Tests
                 Group_id = groupId
             };
 
-            OkObjectResult okResult = new OkObjectResult(new { Value = serverConfirmationReplyString });
+            OkObjectResult okResult = new OkObjectResult(serverConfirmationReplyString);
 
             // Act
             var result = await callbackController.Post(callbackEventModel);

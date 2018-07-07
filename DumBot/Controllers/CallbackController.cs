@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace DumBot.Controllers
 {
+    [Route("")]
     [Route("[controller]")]
     public class CallbackController : Controller
     {
@@ -51,7 +52,7 @@ namespace DumBot.Controllers
                         return BadRequest();
                     }
 
-                    return Ok(new { Value = _settings.ServerConfirmationReplyString });
+                    return Ok(_settings.ServerConfirmationReplyString);
                 case CallbackEventType.NewMessage:
 
                     var message = JsonConvert.DeserializeObject<MessageModel>(callbackEvent.Object.ToString());
